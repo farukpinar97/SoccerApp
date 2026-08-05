@@ -1,0 +1,33 @@
+﻿@model List<ResultMatchDto>
+@{
+    int teamId = ViewBag.TeamId ?? 0;
+}
+
+@if (!Model.Any())
+{
+    <div class="lf-row">Bu takım için tamamlanmış maç bulunamadı.</div>
+}
+else
+{
+    @foreach (var match in Model.OrderByDescending(x => x.MatchDateTime))
+    {
+        var isHome = match.HomeTeamId == teamId;
+
+        var scored = isHome ? match.FullTimeHomeScore : match.FullTimeAwayScore;
+        var conceded = isHome ? match.FullTimeAwayScore : match.FullTimeHomeScore;
+
+        var result = scored > conceded ? "W" : scored == conceded ? "D" : "L";
+        var resultClass = result == "W" ? "lf-w" : result == "D" ? "lf-d" : "lf-l";
+        var resultLetter = result == "W" ? "G" : result == "D" ? "B" : "M";
+
+        var opponent = isHome ? match.AwayTeam?.Name : match.HomeTeam?.Name;
+        var venue = isHome ? "(E)" : "(D)";
+
+        <div class="lf-row">
+            <span class="lf-date">@match.MatchDateTime.ToString("dd MMM")</span>
+            <span class="lf-teams">@venue @opponent</span>
+            <span class="lf-score">@match.FullTimeHomeScore – @match.FullTimeAwayScore</span>
+            <span class="lf-res @resultClass">@resultLetter</span>
+        </div>
+    }
+}

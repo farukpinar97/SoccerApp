@@ -1,0 +1,161 @@
+﻿@model CreateMatchDto
+@{
+    ViewData["Title"] = "Maç Ekle";
+    ViewBag.ActivePage = "admin";
+
+    var teams = ViewBag.Teams as List<SelectListItem> ?? new List<SelectListItem>();
+    var weeks = ViewBag.Weeks as List<SelectListItem> ?? new List<SelectListItem>();
+    var stadiums = ViewBag.Stadiums as List<SelectListItem> ?? new List<SelectListItem>();
+    var referees = ViewBag.Referees as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
+
+<section class="adm-head">
+    <div class="wrap">
+        <h1 class="adm-title">Maç <span style="color:var(--blue)">Ekle</span></h1>
+        <p class="adm-sub">Fikstüre yeni bir maç kaydı ekler</p>
+    </div>
+</section>
+
+<main>
+    <div class="wrap adm-wrap">
+        <form asp-action="CreateMatch" method="post">
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert-box">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <!-- TEMEL BİLGİLER -->
+            <div class="form-box">
+                <div class="form-box-t">Maç Bilgileri</div>
+
+                <div class="row">
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Hafta</label>
+                        <select asp-for="WeekId" asp-items="weeks" class="f-select">
+                            <option value="">Hafta seçiniz</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Ev Sahibi</label>
+                        <select asp-for="HomeTeamId" asp-items="teams" class="f-select">
+                            <option value="">Takım seçiniz</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Deplasman</label>
+                        <select asp-for="AwayTeamId" asp-items="teams" class="f-select">
+                            <option value="">Takım seçiniz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Stadyum</label>
+                        <select asp-for="StadiumId" asp-items="stadiums" class="f-select">
+                            <option value="">Stadyum seçiniz</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Hakem</label>
+                        <select asp-for="RefereeId" asp-items="referees" class="f-select">
+                            <option value="">Hakem seçiniz</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Tarih ve Saat</label>
+                        <input asp-for="MatchDateTime" asp-format="{0:yyyy-MM-ddTHH:mm}"
+                               type="datetime-local" step="60" class="f-input" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- DURUM VE SKOR -->
+            <div class="form-box">
+                <div class="form-box-t">Durum ve Skor</div>
+
+                <div class="row">
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Maç Durumu</label>
+                        <select asp-for="Status" class="f-select" id="statusSelect">
+                            <option value="0">Henüz Oynanmadı</option>
+                            <option value="1">Devam Ediyor</option>
+                            <option value="2">Tamamlandı</option>
+                        </select>
+                        <div class="f-hint">
+                            Puan durumuna yansıması için "Tamamlandı" seçilmelidir.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Anlık Dakika</label>
+                        <input asp-for="CurrentMinute" type="number" min="0" max="130"
+                               class="f-input" placeholder="Sadece devam eden maçlarda" />
+                    </div>
+
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Seyirci Sayısı</label>
+                        <input asp-for="Attendance" type="number" min="0" class="f-input" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 f-group">
+                        <label class="f-label">İlk Yarı — Ev</label>
+                        <input asp-for="HalfTimeHomeScore" type="number" min="0" class="f-input" />
+                    </div>
+                    <div class="col-md-3 f-group">
+                        <label class="f-label">İlk Yarı — Deplasman</label>
+                        <input asp-for="HalfTimeAwayScore" type="number" min="0" class="f-input" />
+                    </div>
+                    <div class="col-md-3 f-group">
+                        <label class="f-label">Maç Sonu — Ev</label>
+                        <input asp-for="FullTimeHomeScore" type="number" min="0" class="f-input" />
+                    </div>
+                    <div class="col-md-3 f-group">
+                        <label class="f-label">Maç Sonu — Deplasman</label>
+                        <input asp-for="FullTimeAwayScore" type="number" min="0" class="f-input" />
+                    </div>
+                </div>
+
+                <div class="f-hint">
+                    Maç henüz oynanmadıysa skor alanlarını boş bırakın.
+                </div>
+            </div>
+
+            <!-- EK -->
+            <div class="form-box">
+                <div class="form-box-t">Ek Bilgiler</div>
+
+                <div class="f-group">
+                    <label class="f-label">Görsel URL</label>
+                    <input asp-for="ImageUrl" class="f-input" placeholder="https://..." />
+                </div>
+
+                <div class="f-check">
+                    <input asp-for="IsFeatured" type="checkbox" id="isFeatured" />
+                    <label for="isFeatured">Ana sayfada "Öne Çıkan Maç" olarak gösterilsin</label>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px">
+                <button type="submit" class="btn-save">
+                    <i class="bi bi-check2"></i> Kaydet
+                </button>
+                <a asp-action="Index" class="btn-cancel">Vazgeç</a>
+            </div>
+
+        </form>
+    </div>
+</main>

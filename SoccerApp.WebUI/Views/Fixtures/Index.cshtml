@@ -1,0 +1,315 @@
+﻿@model List<ResultMatchDto>
+@{
+    ViewData["Title"] = "Fikstür";
+    ViewBag.ActivePage = "fixtures";
+
+    var forms = ViewBag.Forms as Dictionary<int, List<string>> ?? new Dictionary<int, List<string>>();
+
+    var weekNumber = Model.FirstOrDefault()?.Week?.WeekNumber ?? 0;
+    var firstMatch = Model.OrderBy(x => x.MatchDateTime).FirstOrDefault();
+    var lastMatch = Model.OrderByDescending(x => x.MatchDateTime).FirstOrDefault();
+
+    // Maçlar güne göre gruplanır — tema Cuma/Cumartesi/Pazar
+    var dayGroups = Model
+        .OrderBy(x => x.MatchDateTime)
+        .GroupBy(x => x.MatchDateTime.Date)
+        .ToList();
+
+
+    Func<string, string> formLetter = f => f switch
+    {
+        "W" => "G",
+        "D" => "B",
+        _ => "M"
+    };
+
+    Func<string, string> formClass = f => f switch
+    {
+        "W" => "h2h-w",
+        "D" => "h2h-d",
+        _ => "h2h-l"
+    };
+}
+
+<!-- SAYFA BAŞLIĞI -->
+<section class="pg-head">
+    <div class="wrap">
+        <div class="row align-items-end">
+            <div class="col-lg-7">
+                <div class="pg-badge"><i class="bi bi-trophy-fill"></i> Premier League</div>
+                <h1 class="pg-title">
+                    Hafta <span style="color:var(--blue)">@weekNumber</span> Fikstürü
+                </h1>
+                <p class="pg-sub">
+                    @if (firstMatch != null && lastMatch != null)
+                    {
+                        @($"{firstMatch.MatchDateTime:d MMMM} – {lastMatch.MatchDateTime:d MMMM yyyy}")
+                        <text> &nbsp;·&nbsp; </text>
+                    }
+                    @Model.Count Maç
+                </p>
+            </div>
+
+            <div class="col-lg-5 mt-3 mt-lg-0">
+                @if (firstMatch != null)
+                {
+                    <div class="countdown-strip" id="countdown"
+                         data-target="@firstMatch.MatchDateTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                        <span class="cd-label">İlk Maça</span>
+                        <div class="cd-box"><div class="cd-num" id="cd-d">--</div><div class="cd-unit">Gün</div></div>
+                        <span class="cd-sep">:</span>
+                        <div class="cd-box"><div class="cd-num" id="cd-h">--</div><div class="cd-unit">Saat</div></div>
+                        <span class="cd-sep">:</span>
+                        <div class="cd-box"><div class="cd-num" id="cd-m">--</div><div class="cd-unit">Dakika</div></div>
+                        <span class="cd-sep">:</span>
+                        <div class="cd-box"><div class="cd-num" id="cd-s">--</div><div class="cd-unit">Saniye</div></div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<main>
+    <div class="wrap">
+        <div class="content">
+
+            @if (!Model.Any())
+            {
+                <div class="fx-card">
+                    <div class="fx-inner" style="justify-content:center;padding:30px">
+                        <span style="color:var(--t2)">Oynanacak maç bulunamadı.</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- HAFTA ÖZETİ -->
+                <div class="week-summary">
+                    <div class="ws-card">
+                        <div class="ws-num" style="color:var(--blue)">@Model.Count</div>
+                        <div class="ws-lbl">Toplam Maç</div>
+                    </div>
+                    <div class="ws-card">
+                        <div class="ws-num" style="color:var(--gold)">@weekNumber</div>
+                        <div class="ws-lbl">Hafta</div>
+                    </div>
+                    <div class="ws-card">
+                        <div class="ws-num" style="color:var(--green)">@dayGroups.Count</div>
+                        <div class="ws-lbl">Maç Günü</div>
+                    </div>
+                    <div class="ws-card">
+                        <div class="ws-num" style="color:var(--live)">@firstMatch!.MatchDateTime.ToString("dd")</div>
+                        <div class="ws-lbl">@firstMatch.MatchDateTime.ToString("MMMM yyyy")</div>
+                    </div>
+                </div>
+
+                <!-- GÜN GRUPLARI -->
+                @foreach (var day in dayGroups)
+                {
+                    <div class="day-group">
+                        <div class="day-header">
+                            <span class="day-title">@day.Key.ToString("dddd")</span>
+                            <span class="day-date">@day.Key.ToString("d MMMM yyyy")</span>
+                            <div class="day-line"></div>
+                            <span class="day-badge db-tomorrow">@day.Count() Maç</span>
+                        </div>
+
+                        @foreach (var match in day)
+                        {
+                            var homeForm = forms.ContainsKey(match.HomeTeamId) ? forms[match.HomeTeamId] : new List<string>();
+                            var awayForm = forms.ContainsKey(match.AwayTeamId) ? forms[match.AwayTeamId] : new List<string>();
+
+                            <div class="fx-card">
+                                <div class="fx-inner">
+                                    <div class="fx-time-col">
+                                        <div class="fx-time">@match.MatchDateTime.ToString("HH:mm")</div>
+                                        <div class="fx-day-label">@match.MatchDateTime.ToString("dddd")</div>
+                                    </div>
+
+                                    <div class="fx-divider"></div>
+
+                                    <div class="fx-teams">
+                                        <div class="fx-team-home">
+                                            <span class="fx-name home">@match.HomeTeam?.Name</span>
+                                            <div class="fx-logo">
+                                                <img src="@match.HomeTeam?.LogoUrl" alt="@match.HomeTeam?.ShortName"
+                                                     onerror="this.parentNode.textContent='@match.HomeTeam?.ShortName'" />
+                                            </div>
+                                        </div>
+
+                                        <div class="vs-block"><span class="vs-text">VS</span></div>
+
+                                        <div class="fx-team-away">
+                                            <div class="fx-logo">
+                                                <img src="@match.AwayTeam?.LogoUrl" alt="@match.AwayTeam?.ShortName"
+                                                     onerror="this.parentNode.textContent='@match.AwayTeam?.ShortName'" />
+                                            </div>
+                                            <span class="fx-name">@match.AwayTeam?.Name</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="fx-right">
+                                        <span class="fx-stadium">
+                                            <i class="bi bi-geo-alt" style="font-size:10px;margin-right:3px"></i>@match.Stadium?.Name
+                                        </span>
+                                        <button class="notify-btn" onclick="toggleNotify(this)">
+                                            <i class="bi bi-bell"></i> <span>Bildir</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- HER İKİ TAKIMIN SON 5 MAÇI — AYRI AYRI -->
+                                <div class="h2h-strip">
+                                    <span class="h2h-label">@match.HomeTeam?.ShortName Son 5</span>
+                                    <div class="h2h-pills">
+                                        @if (homeForm.Any())
+                                        {
+                                            @foreach (var f in homeForm)
+                                            {
+                                                <div class="h2h-p @formClass(f)">@formLetter(f)</div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span style="font-size:11px;color:var(--t3)">Veri yok</span>
+                                        }
+                                    </div>
+
+                                    <span class="h2h-label" style="margin-left:auto">@match.AwayTeam?.ShortName Son 5</span>
+                                    <div class="h2h-pills">
+                                        @if (awayForm.Any())
+                                        {
+                                            @foreach (var f in awayForm)
+                                            {
+                                                <div class="h2h-p @formClass(f)">@formLetter(f)</div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span style="font-size:11px;color:var(--t3)">Veri yok</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- DETAYLI SON 5 MAÇ (AJAX ile yüklenir) -->
+                                <div class="h2h-strip" style="justify-content:center;gap:10px">
+                                    <button class="notify-btn"
+                                            onclick="loadLastFive(this, @match.HomeTeamId, 'lf-@(match.Id)-home')">
+                                        <i class="bi bi-clock-history"></i>
+                                        <span>@match.HomeTeam?.ShortName son 5 maç</span>
+                                    </button>
+                                    <button class="notify-btn"
+                                            onclick="loadLastFive(this, @match.AwayTeamId, 'lf-@(match.Id)-away')">
+                                        <i class="bi bi-clock-history"></i>
+                                        <span>@match.AwayTeam?.ShortName son 5 maç</span>
+                                    </button>
+                                </div>
+
+                                <div id="lf-@(match.Id)-home" class="last-five-box"></div>
+                                <div id="lf-@(match.Id)-away" class="last-five-box"></div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+</main>
+
+@section Styles {
+    <style>
+        /* Son 5 maç kutusu */
+        .last-five-box { padding: 0 16px }
+        .last-five-box:empty { padding: 0 }
+
+        .lf-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 10px; border-bottom: 1px solid var(--border);
+            font-size: 12px; color: var(--t2)
+        }
+        .lf-row:last-child { border-bottom: none }
+        .lf-date { color: var(--t3); min-width: 62px; font-size: 11px }
+        .lf-teams { flex: 1 }
+        .lf-score { font-family: var(--fd); font-weight: 700; color: var(--t1) }
+        .lf-res {
+            width: 20px; height: 20px; border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--fd); font-size: 11px; font-weight: 700
+        }
+        .lf-w { background: rgba(0,230,118,.14); color: var(--green) }
+        .lf-d { background: rgba(255,193,7,.14); color: var(--yellow) }
+        .lf-l { background: rgba(244,67,54,.14); color: var(--red) }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Bildirim butonu
+        function toggleNotify(btn) {
+            const isActive = btn.classList.contains('active');
+            if (isActive) {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="bi bi-bell"></i> <span>Bildir</span>';
+            } else {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="bi bi-bell-fill"></i> <span>Bildirim Açık</span>';
+            }
+        }
+
+        // Son 5 maç — aç/kapa, ilk açılışta AJAX ile yükle
+        async function loadLastFive(btn, teamId, targetId) {
+            const box = document.getElementById(targetId);
+
+            if (box.innerHTML.trim() !== '') {
+                box.innerHTML = '';
+                btn.classList.remove('active');
+                return;
+            }
+
+            btn.classList.add('active');
+            box.innerHTML = '<div class="lf-row">Yükleniyor...</div>';
+
+            const url = '@Url.Action("LastFiveMatches", "Fixtures")?teamId=' + teamId;
+            const response = await fetch(url);
+            box.innerHTML = await response.text();
+        }
+
+        // Geri sayım — hedef tarih data-target attribute'undan okunur
+        const cdEl = document.getElementById('countdown');
+
+        if (cdEl) {
+            const target = new Date(cdEl.dataset.target);
+
+            const updateCountdown = () => {
+                const diff = target - new Date();
+                const set = (id, v) => document.getElementById(id).textContent = String(v).padStart(2, '0');
+
+                if (diff <= 0) {
+                    set('cd-d', 0); set('cd-h', 0); set('cd-m', 0); set('cd-s', 0);
+                    return;
+                }
+
+                set('cd-d', Math.floor(diff / 86400000));
+                set('cd-h', Math.floor((diff % 86400000) / 3600000));
+                set('cd-m', Math.floor((diff % 3600000) / 60000));
+                set('cd-s', Math.floor((diff % 60000) / 1000));
+            };
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        // Kartların yumuşak girişi
+        document.querySelectorAll('.fx-card').forEach((c, i) => {
+            c.style.opacity = '0';
+            c.style.transform = 'translateY(12px)';
+            setTimeout(() => {
+                c.style.transition = 'opacity .35s ease, transform .35s ease';
+                c.style.opacity = '1';
+                c.style.transform = 'translateY(0)';
+            }, 50 + i * 60);
+        });
+    </script>
+}

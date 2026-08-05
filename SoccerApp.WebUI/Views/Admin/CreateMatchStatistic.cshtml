@@ -1,0 +1,142 @@
+﻿@model CreateMatchStatisticDto
+@{
+    ViewData["Title"] = "Maç İstatistiği Ekle";
+    ViewBag.ActivePage = "admin";
+
+    var matches = ViewBag.Matches as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
+
+<section class="adm-head">
+    <div class="wrap">
+        <h1 class="adm-title">Maç <span style="color:var(--gold)">İstatistiği</span></h1>
+        <p class="adm-sub">Her maç için yalnızca bir kez eklenebilir</p>
+    </div>
+</section>
+
+<main>
+    <div class="wrap adm-wrap">
+        <form asp-action="CreateMatchStatistic" method="post">
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert-box">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div class="form-box">
+                <div class="form-box-t">Maç Seçimi</div>
+                <div class="f-group">
+                    <label class="f-label">Maç</label>
+                    <select asp-for="MatchId" asp-items="matches" class="f-select">
+                        <option value="">Maç seçiniz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-box">
+                <div class="form-box-t">İstatistikler</div>
+
+                <div class="team-head">
+                    <span style="color:var(--blue)">Ev Sahibi</span>
+                    <span style="color:var(--t3)">Metrik</span>
+                    <span style="color:var(--live)">Deplasman</span>
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomePossession" type="number" min="0" max="100" class="f-input" />
+                    <div class="stat-pair-lbl">Topa Sahip Olma (%)</div>
+                    <input asp-for="AwayPossession" type="number" min="0" max="100" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomeShots" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">Şut</div>
+                    <input asp-for="AwayShots" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomeShotsOnTarget" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">İsabetli Şut</div>
+                    <input asp-for="AwayShotsOnTarget" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomePasses" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">Pas</div>
+                    <input asp-for="AwayPasses" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomePassAccuracy" type="number" min="0" max="100" class="f-input" />
+                    <div class="stat-pair-lbl">Pas İsabeti (%)</div>
+                    <input asp-for="AwayPassAccuracy" type="number" min="0" max="100" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomeCorners" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">Korner</div>
+                    <input asp-for="AwayCorners" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomeFouls" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">Faul</div>
+                    <input asp-for="AwayFouls" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomeOffsides" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">Ofsayt</div>
+                    <input asp-for="AwayOffsides" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="stat-pair">
+                    <input asp-for="HomeYellowCards" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">Sarı Kart</div>
+                    <input asp-for="AwayYellowCards" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="stat-pair" style="margin-bottom:0">
+                    <input asp-for="HomeRedCards" type="number" min="0" class="f-input" />
+                    <div class="stat-pair-lbl">Kırmızı Kart</div>
+                    <input asp-for="AwayRedCards" type="number" min="0" class="f-input" />
+                </div>
+
+                <div class="f-hint" style="margin-top:14px">
+                    Topa sahip olma oranlarının toplamı 100 olmalıdır.
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px">
+                <button type="submit" class="btn-save">
+                    <i class="bi bi-check2"></i> Kaydet
+                </button>
+                <a asp-action="Index" class="btn-cancel">Vazgeç</a>
+            </div>
+
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        // Topa sahip olma: biri girilince diğeri otomatik tamamlansın
+        const homePos = document.getElementById('HomePossession');
+        const awayPos = document.getElementById('AwayPossession');
+
+        homePos.addEventListener('input', function () {
+            const v = parseInt(this.value);
+            if (!isNaN(v) && v >= 0 && v <= 100) awayPos.value = 100 - v;
+        });
+
+        awayPos.addEventListener('input', function () {
+            const v = parseInt(this.value);
+            if (!isNaN(v) && v >= 0 && v <= 100) homePos.value = 100 - v;
+        });
+    </script>
+}

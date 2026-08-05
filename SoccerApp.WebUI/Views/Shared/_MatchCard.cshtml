@@ -1,0 +1,81 @@
+﻿@model ResultMatchDto
+@{
+    // Duruma göre kart sınıfı ve rozet
+    var isLive = Model.Status == MatchStatus.InProgress;
+    var isPlayed = Model.Status == MatchStatus.Completed;
+
+    var sectionKey = Model.Status switch
+    {
+        MatchStatus.InProgress => "live",
+        MatchStatus.Completed => "finished",
+        _ => "upcoming"
+    };
+
+    var badgeClass = Model.Status switch
+    {
+        MatchStatus.InProgress => "sb-live",
+        MatchStatus.Completed => "sb-fin",
+        _ => "sb-up"
+    };
+
+    var badgeText = Model.Status switch
+    {
+        MatchStatus.InProgress => "CANLI",
+        MatchStatus.Completed => "MS",
+        _ => Model.MatchDateTime.Date == DateTime.Today ? "BUGÜN"
+             : Model.MatchDateTime.Date == DateTime.Today.AddDays(1) ? "YARIN"
+             : Model.MatchDateTime.ToString("dd MMM").ToUpper()
+    };
+
+    var minuteClass = isLive ? "lc" : Model.Status == MatchStatus.NotPlayed ? "bc" : "";
+
+    // Skoru olan tarafı vurgulamak için
+    var homeWin = isPlayed && Model.FullTimeHomeScore > Model.FullTimeAwayScore;
+    var awayWin = isPlayed && Model.FullTimeAwayScore > Model.FullTimeHomeScore;
+
+    var homeScore = Model.FullTimeHomeScore?.ToString() ?? "—";
+    var awayScore = Model.FullTimeAwayScore?.ToString() ?? "—";
+}
+
+<div class="mc-wrap mcw" data-s="@sectionKey">
+    <a asp-controller="MatchDetail" asp-action="Index" asp-route-id="@Model.Id"
+       class="mc @(isLive ? "live lp" : "")">
+
+        <div class="mc-time">
+            <div class="mc-min @minuteClass">@Model.StatusText</div>
+            <div class="sbadge @badgeClass">
+                @if (isLive)
+                {
+                    <span class="live-dot"></span>
+                }
+                @badgeText
+            </div>
+        </div>
+
+        <div class="dvv"></div>
+
+        <div class="mc-teams">
+            <div class="mc-tr">
+                <div class="tl-sm">
+                    <img src="@Model.HomeTeam?.LogoUrl" alt="@Model.HomeTeam?.ShortName"
+                         onerror="this.parentNode.textContent='@Model.HomeTeam?.ShortName'" />
+                </div>
+                <span class="tn">@Model.HomeTeam?.Name</span>
+                <span class="ts @(homeWin ? "win" : "") @(!isPlayed && !isLive ? "dim" : "")">@homeScore</span>
+            </div>
+
+            <div class="mc-tr">
+                <div class="tl-sm">
+                    <img src="@Model.AwayTeam?.LogoUrl" alt="@Model.AwayTeam?.ShortName"
+                         onerror="this.parentNode.textContent='@Model.AwayTeam?.ShortName'" />
+                </div>
+                <span class="tn">@Model.AwayTeam?.Name</span>
+                <span class="ts @(awayWin ? "win" : "") @(!isPlayed && !isLive ? "dim" : "")">@awayScore</span>
+            </div>
+        </div>
+
+        <span class="det-btn">
+            <i class="bi bi-chevron-right"></i> <span>Detay</span>
+        </span>
+    </a>
+</div>

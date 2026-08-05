@@ -1,0 +1,276 @@
+﻿/* ══════════════════════════════════════════════════════════
+   Admin panel stilleri — GoalZone temasının değişkenlerini kullanır.
+   Sadece Views/Admin altındaki sayfalarda yüklenir.
+   ══════════════════════════════════════════════════════════ */
+
+.adm-head {
+    background: linear-gradient(135deg, var(--bg2), var(--card));
+    border-bottom: 1px solid var(--border);
+    padding: 30px 0 24px;
+}
+
+.adm-title {
+    font-family: var(--fd);
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 900;
+    letter-spacing: .5px;
+}
+
+.adm-sub {
+    font-size: 13px;
+    color: var(--t2);
+    margin-top: 6px
+}
+
+.adm-wrap {
+    padding: 28px 0 56px
+}
+
+/* ── Menü kartları ── */
+.adm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+}
+
+.adm-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r3);
+    padding: 22px;
+    transition: var(--tr);
+    display: block;
+}
+
+    .adm-card:hover {
+        border-color: var(--blue);
+        background: var(--card2);
+        transform: translateY(-2px);
+    }
+
+.adm-ico {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--r2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    margin-bottom: 14px;
+}
+
+    .adm-ico.blue {
+        background: rgba(41,121,255,.12);
+        color: var(--blue)
+    }
+
+    .adm-ico.green {
+        background: rgba(0,230,118,.12);
+        color: var(--green)
+    }
+
+    .adm-ico.gold {
+        background: rgba(255,214,0,.12);
+        color: var(--gold)
+    }
+
+.adm-card-t {
+    font-family: var(--fd);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    margin-bottom: 5px;
+}
+
+.adm-card-d {
+    font-size: 12px;
+    color: var(--t2);
+    line-height: 1.5
+}
+
+/* ── Form kutusu ── */
+.form-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r3);
+    padding: 24px;
+    margin-bottom: 18px;
+}
+
+.form-box-t {
+    font-family: var(--fd);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--t1);
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.f-group {
+    margin-bottom: 16px
+}
+
+.f-label {
+    display: block;
+    font-family: var(--fd);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--t2);
+    margin-bottom: 6px;
+}
+
+.f-input,
+.f-select {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r1);
+    padding: 10px 12px;
+    color: var(--t1);
+    font-family: var(--fb);
+    font-size: 14px;
+    transition: var(--tr);
+}
+
+    .f-input:focus,
+    .f-select:focus {
+        outline: none;
+        border-color: var(--blue);
+        background: var(--card2);
+    }
+
+    .f-select option {
+        background: var(--bg2);
+        color: var(--t1)
+    }
+
+.f-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px
+}
+
+    .f-check input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--green)
+    }
+
+    .f-check label {
+        font-size: 13px;
+        color: var(--t2);
+        margin: 0
+    }
+
+.f-hint {
+    font-size: 11px;
+    color: var(--t3);
+    margin-top: 4px
+}
+
+/* ── Butonlar ── */
+.btn-save {
+    background: linear-gradient(135deg, var(--green), #00b85c);
+    border: none;
+    border-radius: var(--r1);
+    padding: 11px 26px;
+    color: #04210f;
+    font-family: var(--fd);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: var(--tr);
+}
+
+    .btn-save:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px)
+    }
+
+.btn-cancel {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: var(--r1);
+    padding: 11px 22px;
+    color: var(--t2);
+    font-family: var(--fd);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: var(--tr);
+    display: inline-block;
+}
+
+    .btn-cancel:hover {
+        background: var(--elevated);
+        color: var(--t1)
+    }
+
+/* ── Uyarı kutusu ── */
+.alert-box {
+    background: rgba(244,67,54,.08);
+    border: 1px solid rgba(244,67,54,.25);
+    border-radius: var(--r2);
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: #ff8a80;
+}
+
+    .alert-box ul {
+        margin: 0;
+        padding-left: 18px
+    }
+
+/* ── İkili istatistik satırı ── */
+.stat-pair {
+    display: grid;
+    grid-template-columns: 1fr 150px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.stat-pair-lbl {
+    text-align: center;
+    font-family: var(--fd);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--t2);
+}
+
+.team-head {
+    display: grid;
+    grid-template-columns: 1fr 150px 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+    .team-head span {
+        font-family: var(--fd);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+@media (max-width: 640px) {
+    .stat-pair, .team-head {
+        grid-template-columns: 1fr 90px 1fr;
+        gap: 7px
+    }
+}

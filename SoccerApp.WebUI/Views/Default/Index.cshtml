@@ -1,0 +1,245 @@
+﻿@model List<ResultMatchDto>
+@{
+    ViewData["Title"] = "Haftalık Sonuçlar";
+    ViewBag.ActivePage = "home";
+
+    var weeks = ViewBag.Weeks as List<ResultWeekDto> ?? new List<ResultWeekDto>();
+    int selectedWeek = ViewBag.SelectedWeek ?? 1;
+    int? prevWeek = ViewBag.PreviousWeek;
+    int? nextWeek = ViewBag.NextWeek;
+
+    var currentWeek = weeks.FirstOrDefault(x => x.WeekNumber == selectedWeek);
+
+    var liveMatches = Model.Where(x => x.Status == MatchStatus.InProgress).ToList();
+    var finishedMatches = Model.Where(x => x.Status == MatchStatus.Completed).ToList();
+    var upcomingMatches = Model.Where(x => x.Status == MatchStatus.NotPlayed).ToList();
+
+    var featured = Model.FirstOrDefault(x => x.IsFeatured)
+                   ?? finishedMatches.FirstOrDefault();
+}
+
+<!-- LİG BAŞLIĞI -->
+<section class="lg-head">
+    <div class="wrap">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="lg-badge"><i class="bi bi-trophy-fill"></i> Premier League</div>
+                <h1 class="lg-title">
+                    Hafta <span style="color:var(--green)">@selectedWeek</span> Sonuçları
+                </h1>
+                <p class="lg-sub">
+                    @if (currentWeek != null)
+                    {
+                        @($"{currentWeek.StartDate:d MMMM} – {currentWeek.EndDate:d MMMM yyyy}")
+                        <text> &nbsp;·&nbsp; </text>
+                    }
+                    @Model.Count Maç
+                </p>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="lg-stats">
+                    <div style="text-align:center">
+                        <div class="ls-num">@liveMatches.Count</div>
+                        <div class="ls-lbl">Canlı</div>
+                    </div>
+                    <div style="text-align:center">
+                        <div class="ls-num">@finishedMatches.Count</div>
+                        <div class="ls-lbl">Biten</div>
+                    </div>
+                    <div style="text-align:center">
+                        <div class="ls-num">@upcomingMatches.Count</div>
+                        <div class="ls-lbl">Yaklaşan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FİLTRE SEKMELERİ -->
+<div class="ftabs-wrap">
+    <div class="wrap">
+        <div class="ftabs">
+            <button class="ftab active" data-f="all">Tüm Maçlar</button>
+            <button class="ftab" data-f="live">
+                <span class="live-dot"></span>Canlı
+                @if (liveMatches.Any())
+                {
+                    <span class="bcnt">@liveMatches.Count</span>
+                }
+            </button>
+            <button class="ftab" data-f="finished">Tamamlananlar</button>
+            <button class="ftab" data-f="upcoming">Yaklaşanlar</button>
+        </div>
+    </div>
+</div>
+
+<main>
+    <div class="wrap" style="padding-top:28px;padding-bottom:56px">
+
+        <!-- HAFTA SEÇİMİ / SAYFALAMA -->
+        <div class="week-nav" style="margin-bottom:22px">
+            @if (prevWeek.HasValue)
+            {
+                <a asp-action="Index" asp-route-week="@prevWeek" class="wn-btn">
+                    <i class="bi bi-chevron-left"></i> <span>Hafta @prevWeek</span>
+                </a>
+            }
+            else
+            {
+                <span class="wn-btn" style="opacity:.35;cursor:default">
+                    <i class="bi bi-chevron-left"></i> <span>—</span>
+                </span>
+            }
+
+            <div class="wn-cur">Hafta @selectedWeek</div>
+
+            @if (nextWeek.HasValue)
+            {
+                <a asp-action="Index" asp-route-week="@nextWeek" class="wn-btn">
+                    <span>Hafta @nextWeek</span> <i class="bi bi-chevron-right"></i>
+                </a>
+            }
+            else
+            {
+                <span class="wn-btn" style="opacity:.35;cursor:default">
+                    <span>—</span> <i class="bi bi-chevron-right"></i>
+                </span>
+            }
+
+            <select id="weekSelect" class="wn-btn"
+                    style="background:var(--card);cursor:pointer;margin-left:auto">
+                @foreach (var w in weeks)
+                {
+                    <option value="@w.WeekNumber" selected="@(w.WeekNumber == selectedWeek)">
+                        @w.WeekNumber. Hafta
+                    </option>
+                }
+            </select>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="mc-wrap">
+                <div class="mc" style="justify-content:center;padding:34px">
+                    <span style="color:var(--t2)">Bu haftaya ait maç bulunamadı.</span>
+                </div>
+            </div>
+        }
+
+        <!-- ÖNE ÇIKAN MAÇ -->
+        @if (featured != null)
+        {
+            <div class="feat-wrap" id="featWrap">
+                <div class="feat-lbl">Öne Çıkan Maç</div>
+                <a asp-controller="MatchDetail" asp-action="Index" asp-route-id="@featured.Id"
+                   class="feat-card">
+                    <div class="row align-items-center g-2">
+                        <div class="col-5">
+                            <div class="ft-team">
+                                <div class="ft-logo">
+                                    <img src="@featured.HomeTeam?.LogoUrl" alt="@featured.HomeTeam?.ShortName"
+                                         onerror="this.parentNode.textContent='@featured.HomeTeam?.ShortName'" />
+                                </div>
+                                <div class="ft-name">@featured.HomeTeam?.Name</div>
+                                <div class="ft-type">Ev Sahibi</div>
+                            </div>
+                        </div>
+                        <div class="col-2 text-center">
+                            <div class="ft-sc-area">
+                                <div class="ft-sc">@featured.ScoreText</div>
+                                <div class="ft-stat">
+                                    <i class="bi bi-check2-circle"></i> MAÇ BİTTİ
+                                </div>
+                                <div class="ft-meta">
+                                    İY: @featured.HalfTimeText &nbsp;·&nbsp; @featured.MatchDateTime.ToString("HH:mm")
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="ft-team">
+                                <div class="ft-logo">
+                                    <img src="@featured.AwayTeam?.LogoUrl" alt="@featured.AwayTeam?.ShortName"
+                                         onerror="this.parentNode.textContent='@featured.AwayTeam?.ShortName'" />
+                                </div>
+                                <div class="ft-name">@featured.AwayTeam?.Name</div>
+                                <div class="ft-type">Deplasman</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3" style="font-size:12px;color:var(--t2)">
+                        <i class="bi bi-geo-alt"></i> @featured.Stadium?.Name &nbsp;·&nbsp;
+                        <i class="bi bi-calendar3"></i> @featured.MatchDateTime.ToString("d MMMM yyyy") &nbsp;·&nbsp;
+                        <span style="color:var(--blue)">Detayları Gör →</span>
+                    </div>
+                </a>
+            </div>
+        }
+
+        <!-- CANLI MAÇLAR -->
+        @if (liveMatches.Any())
+        {
+            <div class="sec-ttl mcw-section" data-s="live">🔴 &nbsp;Canlı Maçlar</div>
+
+            @foreach (var match in liveMatches)
+            {
+                <partial name="_MatchCard" model="match" />
+            }
+        }
+
+        <!-- TAMAMLANAN MAÇLAR -->
+        @if (finishedMatches.Any())
+        {
+            <div class="sec-ttl mcw-section" data-s="finished" style="margin-top:22px">
+                ✅ &nbsp;Tamamlanan Maçlar
+            </div>
+
+            @foreach (var match in finishedMatches)
+            {
+                <partial name="_MatchCard" model="match" />
+            }
+        }
+
+        <!-- YAKLAŞAN MAÇLAR -->
+        @if (upcomingMatches.Any())
+        {
+            <div class="sec-ttl mcw-section" data-s="upcoming" style="margin-top:22px">
+                🕐 &nbsp;Yaklaşan Maçlar
+            </div>
+
+            @foreach (var match in upcomingMatches)
+            {
+                <partial name="_MatchCard" model="match" />
+            }
+        }
+
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        // Filtre sekmeleri
+        document.querySelectorAll('.ftab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const f = tab.dataset.f;
+
+                document.querySelectorAll('.mcw').forEach(w => {
+                    w.style.display = (f === 'all' || w.dataset.s === f) ? 'block' : 'none';
+                });
+                document.querySelectorAll('.mcw-section').forEach(s => {
+                    s.style.display = (f === 'all' || s.dataset.s === f) ? 'block' : 'none';
+                });
+
+                const feat = document.getElementById('featWrap');
+                if (feat) feat.style.display = f === 'all' ? 'block' : 'none';
+            });
+        });
+
+        // Hafta dropdown'u
+        document.getElementById('weekSelect').addEventListener('change', function () {
+            window.location.href = '@Url.Action("Index", "Default")?week=' + this.value;
+        });
+    </script>
+}

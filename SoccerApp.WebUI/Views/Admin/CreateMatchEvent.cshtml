@@ -1,0 +1,146 @@
+﻿@model CreateMatchEventDto
+@{
+    ViewData["Title"] = "Maç Olayı Ekle";
+    ViewBag.ActivePage = "admin";
+
+    var matches = ViewBag.Matches as List<SelectListItem> ?? new List<SelectListItem>();
+    var eventTypes = ViewBag.EventTypes as List<SelectListItem> ?? new List<SelectListItem>();
+    var teams = ViewBag.Teams as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
+
+<section class="adm-head">
+    <div class="wrap">
+        <h1 class="adm-title">Maç Olayı <span style="color:var(--green)">Ekle</span></h1>
+        <p class="adm-sub">Gol, kart veya oyuncu değişikliği kaydı</p>
+    </div>
+</section>
+
+<main>
+    <div class="wrap adm-wrap">
+        <form asp-action="CreateMatchEvent" method="post">
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert-box">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div class="form-box">
+                <div class="form-box-t">Olay Bilgileri</div>
+
+                <div class="f-group">
+                    <label class="f-label">Maç</label>
+                    <select asp-for="MatchId" asp-items="matches" class="f-select">
+                        <option value="">Maç seçiniz</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 f-group">
+                        <label class="f-label">Takım</label>
+                        <select asp-for="TeamId" asp-items="teams" class="f-select" id="teamSelect">
+                            <option value="">Takım seçiniz</option>
+                        </select>
+                        <div class="f-hint">Takım seçilince oyuncu listesi yüklenir.</div>
+                    </div>
+
+                    <div class="col-md-6 f-group">
+                        <label class="f-label">Olay Türü</label>
+                        <select asp-for="EventTypeId" asp-items="eventTypes" class="f-select" id="eventTypeSelect">
+                            <option value="">Olay türü seçiniz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 f-group">
+                        <label class="f-label" id="playerLabel">Oyuncu</label>
+                        <select asp-for="PlayerId" class="f-select" id="playerSelect">
+                            <option value="">Önce takım seçiniz</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 f-group" id="playerInGroup" style="display:none">
+                        <label class="f-label">Oyuna Giren</label>
+                        <select asp-for="PlayerInId" class="f-select" id="playerInSelect">
+                            <option value="">Önce takım seçiniz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 f-group">
+                        <label class="f-label">Dakika</label>
+                        <input asp-for="Minute" type="number" min="0" max="130" class="f-input" />
+                    </div>
+
+                    <div class="col-md-8 f-group">
+                        <label class="f-label">Açıklama</label>
+                        <input asp-for="Description" class="f-input"
+                               placeholder="Penaltı, Kafa Golü, Faul, 2. Sarı / Kırmızı..." />
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px">
+                <button type="submit" class="btn-save">
+                    <i class="bi bi-check2"></i> Kaydet
+                </button>
+                <a asp-action="Index" class="btn-cancel">Vazgeç</a>
+            </div>
+
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        const teamSelect = document.getElementById('teamSelect');
+        const playerSelect = document.getElementById('playerSelect');
+        const playerInSelect = document.getElementById('playerInSelect');
+        const eventTypeSelect = document.getElementById('eventTypeSelect');
+        const playerInGroup = document.getElementById('playerInGroup');
+        const playerLabel = document.getElementById('playerLabel');
+
+        // Takım seçilince o takımın oyuncularını getir
+        teamSelect.addEventListener('change', async function () {
+            const teamId = this.value;
+
+            if (!teamId) {
+                playerSelect.innerHTML = '<option value="">Önce takım seçiniz</option>';
+                playerInSelect.innerHTML = '<option value="">Önce takım seçiniz</option>';
+                return;
+            }
+
+            playerSelect.innerHTML = '<option value="">Yükleniyor...</option>';
+
+            const url = '@Url.Action("GetPlayersByTeam", "Admin")?teamId=' + teamId;
+            const response = await fetch(url);
+            const players = await response.json();
+
+            let options = '<option value="">Oyuncu seçiniz</option>';
+            players.forEach(p => {
+                options += '<option value="' + p.id + '">' + p.fullName + ' (' + p.position + ')</option>';
+            });
+
+            playerSelect.innerHTML = options;
+            playerInSelect.innerHTML = options;
+        });
+
+        // Oyuncu değişikliği seçilirse "oyuna giren" alanı açılsın
+        eventTypeSelect.addEventListener('change', function () {
+            const text = this.options[this.selectedIndex].text;
+            const isSub = text.indexOf('Değişikliği') > -1 || text.indexOf('Degisikligi') > -1;
+
+            playerInGroup.style.display = isSub ? 'block' : 'none';
+            playerLabel.textContent = isSub ? 'Oyundan Çıkan' : 'Oyuncu';
+
+            if (!isSub) playerInSelect.value = '';
+        });
+    </script>
+}

@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Admin Panel";
+    ViewBag.ActivePage = "admin";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
+
+<section class="adm-head">
+    <div class="wrap">
+        <h1 class="adm-title">Admin <span style="color:var(--green)">Panel</span></h1>
+        <p class="adm-sub">Maç, maç olayı ve maç istatistiği ekleme işlemleri</p>
+    </div>
+</section>
+
+<main>
+    <div class="wrap adm-wrap">
+        <div class="adm-grid">
+
+            <a asp-action="CreateMatch" class="adm-card">
+                <div class="adm-ico blue"><i class="bi bi-calendar-plus"></i></div>
+                <div class="adm-card-t">Maç Ekle</div>
+                <div class="adm-card-d">
+                    Fikstüre yeni maç ekler. Hafta, takımlar, stadyum, tarih ve
+                    durum bilgisi girilir.
+                </div>
+            </a>
+
+            <a asp-action="CreateMatchEvent" class="adm-card">
+                <div class="adm-ico green"><i class="bi bi-activity"></i></div>
+                <div class="adm-card-t">Maç Olayı Ekle</div>
+                <div class="adm-card-d">
+                    Gol, sarı kart, kırmızı kart veya oyuncu değişikliği kaydeder.
+                    Detay sayfasındaki zaman çizelgesini besler.
+                </div>
+            </a>
+
+            <a asp-action="CreateMatchStatistic" class="adm-card">
+                <div class="adm-ico gold"><i class="bi bi-graph-up"></i></div>
+                <div class="adm-card-t">Maç İstatistiği Ekle</div>
+                <div class="adm-card-d">
+                    Topa sahip olma, şut, pas, korner, faul gibi verileri girer.
+                    Her maç için bir kez eklenebilir.
+                </div>
+            </a>
+
+        </div>
+
+        <div class="form-box" style="margin-top:22px">
+            <div class="form-box-t">Bilgi</div>
+            <p style="font-size:13px;color:var(--t2);line-height:1.7;margin:0">
+                Bu panelde yalnızca <strong style="color:var(--t1)">ekleme</strong> işlemleri yapılır.
+                Güncelleme ve silme kapsam dışıdır.<br />
+                Puan durumu ayrı bir tabloda tutulmaz; eklenen maç sonuçlarından
+                otomatik hesaplanır. Bir maçın puan durumuna yansıması için
+                durumunun <strong style="color:var(--t1)">Tamamlandı</strong> olması ve
+                maç sonu skorunun girilmiş olması gerekir.
+            </p>
+        </div>
+    </div>
+</main>

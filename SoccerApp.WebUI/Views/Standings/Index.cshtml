@@ -1,0 +1,212 @@
+﻿@model List<ResultStandingDto>
+@{
+    ViewData["Title"] = "Puan Durumu";
+    ViewBag.ActivePage = "standings";
+
+    var leader = Model.FirstOrDefault();
+    var topScorer = Model.OrderByDescending(x => x.GoalsFor).FirstOrDefault();
+    var bestDefence = Model.OrderBy(x => x.GoalsAgainst).FirstOrDefault();
+    var totalGoals = Model.Sum(x => x.GoalsFor);
+    var playedWeeks = Model.Any() ? Model.Max(x => x.Played) : 0;
+
+    // Bölge kodu → satır şeridi rengi
+    Func<string, string> zoneStrip = z => z switch
+    {
+        "champ" => "cl-champ",
+        "ucl" => "cl-ucl",
+        "uel" => "cl-uel",
+        "rel" => "cl-rel",
+        _ => "cl-none"
+    };
+
+    // Bölge kodu → sıra numarası rengi
+    Func<string, string> posClass = z => z switch
+    {
+        "champ" => "top1",
+        "ucl" => "top4",
+        "uel" => "euro",
+        "rel" => "rel",
+        _ => ""
+    };
+
+    // Form harfi → renk sınıfı
+    Func<string, string> formClass = f => f switch
+    {
+        "W" => "fp-w",
+        "D" => "fp-d",
+        _ => "fp-l"
+    };
+}
+
+<!-- SAYFA BAŞLIĞI -->
+<section class="pg-head">
+    <div class="wrap">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="pg-badge"><i class="bi bi-trophy-fill"></i> Premier League</div>
+                <h1 class="pg-title">Puan <span style="color:var(--green)">Durumu</span></h1>
+                <p class="pg-sub">2024 / 2025 Sezonu &nbsp;·&nbsp; @playedWeeks. Hafta Sonrası</p>
+            </div>
+            <div class="col-lg-4 mt-3 mt-lg-0">
+                <div class="legend">
+                    <div class="leg-item"><div class="leg-dot" style="background:rgba(255,214,0,.8)"></div>Şampiyon</div>
+                    <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Şampiyonlar Ligi</div>
+                    <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>UEFA Ligi</div>
+                    <div class="leg-item"><div class="leg-dot" style="background:var(--live)"></div>Küme Düşme</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main>
+    <div class="wrap">
+        <div class="tbl-wrap">
+
+            @if (!Model.Any())
+            {
+                <div class="ts-card" style="text-align:center;padding:34px">
+                    <span style="color:var(--t2)">
+                        Puan durumu hesaplanamadı. Henüz tamamlanmış maç bulunmuyor.
+                    </span>
+                </div>
+            }
+            else
+            {
+                <!-- ÜST İSTATİSTİK KARTLARI -->
+                <div class="top-stats">
+                    <div class="ts-card">
+                        <div class="ts-label">Lider Takım</div>
+                        <div class="ts-val" style="color:var(--gold)">@leader!.ShortName</div>
+                        <div class="ts-team">@leader.TeamName · @leader.Points puan</div>
+                    </div>
+                    <div class="ts-card">
+                        <div class="ts-label">En Çok Gol</div>
+                        <div class="ts-val" style="color:var(--green)">@topScorer!.GoalsFor</div>
+                        <div class="ts-team">@topScorer.TeamName</div>
+                    </div>
+                    <div class="ts-card">
+                        <div class="ts-label">En Az Yenilen</div>
+                        <div class="ts-val" style="color:var(--blue)">@bestDefence!.GoalsAgainst</div>
+                        <div class="ts-team">@bestDefence.TeamName</div>
+                    </div>
+                    <div class="ts-card">
+                        <div class="ts-label">Toplam Gol</div>
+                        <div class="ts-val" style="color:var(--t1)">@totalGoals</div>
+                        <div class="ts-team">@playedWeeks haftada</div>
+                    </div>
+                </div>
+
+                <!-- TABLO -->
+                <div style="overflow-x:auto;border-radius:var(--r3);border:1px solid var(--border)">
+                    <table class="std-table" style="min-width:620px">
+                        <thead>
+                            <tr>
+                                <th style="width:4px;padding:0"></th>
+                                <th style="width:44px">#</th>
+                                <th class="team-col">Takım</th>
+                                <th>O</th>
+                                <th>G</th>
+                                <th>B</th>
+                                <th>M</th>
+                                <th class="hide-sm">AG</th>
+                                <th class="hide-sm">YG</th>
+                                <th>AV</th>
+                                <th>Son 5</th>
+                                <th>P</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                string lastZone = null;
+                            }
+
+                            @foreach (var team in Model)
+                            {
+                                // Bölge değiştiğinde ayırıcı başlık satırı basılır
+                                if (team.Zone != lastZone)
+                                {
+                                    var zoneTitle = team.Zone switch
+                                    {
+                                        "champ" => "🏆 &nbsp;Şampiyonlar Ligi Grupları",
+                                        "ucl" => null,
+                                        "uel" => "🔵 &nbsp;UEFA Avrupa Ligi",
+                                        "rel" => "🔴 &nbsp;Küme Düşme Hattı",
+                                        _ => "— &nbsp;Avrupa Dışı"
+                                    };
+
+                                    if (zoneTitle != null)
+                                    {
+                                        <tr>
+                                            <td colspan="12">
+                                                <div class="zone-lbl">@Html.Raw(zoneTitle)</div>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    lastZone = team.Zone;
+                                }
+
+                                var gd = team.GoalDifference;
+                                var gdText = gd > 0 ? $"+{gd}" : gd.ToString();
+                                var gdClass = gd > 0 ? "pos" : gd < 0 ? "neg" : "zero";
+
+                                <tr class="std-row" title="@team.TeamName">
+                                    <td style="padding:0;width:4px">
+                                        <div class="pos-strip @zoneStrip(team.Zone)"
+                                             style="height:44px;border-radius:var(--r1) 0 0 var(--r1)"></div>
+                                    </td>
+                                    <td><span class="pos-num @posClass(team.Zone)">@team.Position</span></td>
+                                    <td>
+                                        <div class="team-cell">
+                                            <div class="t-logo">
+                                                <img src="@team.LogoUrl" alt="@team.ShortName"
+                                                     onerror="this.parentNode.textContent='@team.ShortName'" />
+                                            </div>
+                                            <div class="t-name">
+                                                <span class="t-full">@team.TeamName</span>
+                                                <span class="t-short">@team.ShortName</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="s-mp">@team.Played</td>
+                                    <td class="s-w">@team.Won</td>
+                                    <td class="s-d">@team.Drawn</td>
+                                    <td class="s-l">@team.Lost</td>
+                                    <td class="s-gf hide-sm">@team.GoalsFor</td>
+                                    <td class="s-ga hide-sm">@team.GoalsAgainst</td>
+                                    <td class="s-gd @gdClass">@gdText</td>
+                                    <td>
+                                        <div class="form-row">
+                                            @foreach (var f in team.Form)
+                                            {
+                                                <div class="fp @formClass(f)">@f</div>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="s-pts @(team.Zone == "champ" ? "pts-top" : "")">@team.Points</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        // Satırların sırayla belirmesi
+        document.querySelectorAll('.std-row').forEach((r, i) => {
+            r.style.opacity = '0';
+            r.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                r.style.transition = 'opacity .3s ease, transform .3s ease';
+                r.style.opacity = '1';
+                r.style.transform = 'translateY(0)';
+            }, 30 + i * 28);
+        });
+    </script>
+}
